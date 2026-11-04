@@ -301,6 +301,15 @@ Linux.
     made them, is asked), that
     the state and config keys it lists are on real devices with the types it
     gives, and that its features and triggers are the ones in the source.
+30. `test_visca_auto_framing.py` covers a camera's PTZ Auto Framing, with a
+    `ptzsim` that says it is a Sony SRG-A12 (`--visca-model 0001:0622`): that
+    its command set has it, as the `auto_framing` state key and feature,
+    that it is turned on and off with `ptz_request_state`, the dock's three
+    hotkeys on the selected camera, as obs-websocket's `TriggerHotkeyByName`
+    presses them from its own thread, and the state view's checkbox, and that
+    a camera of another model is never asked for it and the hotkeys send it
+    nothing. The camera's menu in the dock, which turns it on and off as the
+    hotkeys do, isn't: the dock isn't shown here, so it can't be right-clicked.
 
 ## Running locally
 

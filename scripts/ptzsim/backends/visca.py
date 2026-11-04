@@ -99,6 +99,7 @@ VISCA_SETTINGS = {
     'menu_on': False,
     'ir_receive': True,
     'ir_condition': 0,               # 0 stable, 1 unstable, 2 not checked
+    'auto_framing': False,           # an SRG-A12's PTZ Auto Framing
 }
 
 # Commands that set one setting from one byte of the command, "8x 01 .. 0p":
@@ -610,6 +611,11 @@ class ViscaCameraLogic:
             self.state.tally['green'] = dg[7] == 0x02
         self.cmd_ack()
 
+    def cmd097e010a(self, dg):
+        '''CAM_TallyInq: y0 50 0p, p = 2 on, 3 off, the red lamp, as Sony's
+        SRG-A40/A12 command list has it'''
+        self.send_datagram(b'\x50' + self.encode_bool(self.state.tally['red']))
+
     def cmd017e041a(self, dg):
         '''Tally lamp, green (preview): 8x 01 7e 04 1a 00 0p, p = 2 on, 3 off'''
         if not self.green_tally:
@@ -617,6 +623,19 @@ class ViscaCameraLogic:
             return
         self.state.tally['green'] = dg[6] == 0x02
         self.cmd_ack()
+
+    def cmd017e043a(self, dg):
+        '''PTZ Auto Framing, as Sony's SRG-A12 has it: 8x 01 7e 04 3a 0p,
+        p = 1 start, 0 stop'''
+        if len(dg) != 6 or dg[5] not in (0, 1):
+            self.send_datagram(b'\x60\x02')
+            return
+        self.cam['auto_framing'] = dg[5] == 1
+        self.cmd_ack()
+
+    def cmd097e043a(self, dg):
+        '''CAM_PTZAutoFramingInq: y0 50 0p, p = 1 started, 0 stopped'''
+        self.send_datagram(b'\x50' + bytes([1 if self.cam['auto_framing'] else 0]))
 
     def cmd090447(self, dg):
         '''CAM_ZoomPosInq'''
