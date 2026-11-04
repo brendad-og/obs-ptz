@@ -477,11 +477,16 @@ PTZControls::PTZControls(QWidget *parent) : QFrame(parent), ui(new Ui::PTZContro
 	registerHotkey("PTZ.FocusAutoToggle", obs_module_text("PTZ.Action.FocusAutoToggle"), autofocustogglecb, this);
 	registerHotkey("PTZ.FocusAutoOn", obs_module_text("PTZ.Action.FocusAutoOn"), autofocusoncb, this);
 	registerHotkey("PTZ.FocusAutoOff", obs_module_text("PTZ.Action.FocusAutoOff"), autofocusoffcb, this);
+	/* On the main thread, which the device's ptz_request_state must be called
+	 * from: obs-websocket's TriggerHotkeyByName calls this on its own */
 	auto autoframingcb = [](void *ptz_data, obs_hotkey_id hotkey, obs_hotkey_t *, bool pressed) {
 		PTZControls *ptzctrl = static_cast<PTZControls *>(ptz_data);
-		if (pressed)
+		if (!pressed)
+			return;
+		QMetaObject::invokeMethod(ptzctrl, [ptzctrl, hotkey]() {
 			ptzctrl->setAutoFraming(ptzctrl->ui->deviceList->currentIndex(),
 						ptzctrl->autoframing_hotkey_map.value(hotkey, -1));
+		});
 	};
 	autoframing_hotkey_map[registerHotkey("PTZ.AutoFramingToggle", obs_module_text("PTZ.Action.AutoFramingToggle"),
 					      autoframingcb, this)] = -1;
