@@ -1902,6 +1902,17 @@ TABLES = json.loads(r'''
    "vendors": [],
    "inquiries": [],
    "power": null
+  },
+  {
+   "id": "sony-srg-a12",
+   "models": [
+    67106
+   ],
+   "vendors": [],
+   "inquiries": [
+    "81097e043aff"
+   ],
+   "power": null
   }
  ],
  "vendors": {
